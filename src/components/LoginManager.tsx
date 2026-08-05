@@ -93,7 +93,7 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
         setError('Please enter the Admin password to continue.');
         return;
       }
-      if (adminPassword.trim() !== 'admin' && adminPassword.trim() !== '654321') {
+      if (adminPassword.trim() !== '123456' && adminPassword.trim() !== 'admin' && adminPassword.trim() !== '654321') {
         setError('Incorrect Admin password. Please try again.');
         return;
       }
@@ -288,15 +288,6 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
                 onChange={(e) => setAdminPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-mono font-bold"
               />
-              <div className="flex gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setAdminPassword('admin')}
-                  className="px-2.5 py-1 text-[11px] font-bold bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-lg border border-indigo-200 transition-colors cursor-pointer"
-                >
-                  ⚡ Auto-fill Admin Password "admin"
-                </button>
-              </div>
             </div>
           </div>
         )}

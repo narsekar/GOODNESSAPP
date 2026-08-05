@@ -7,7 +7,7 @@ export const SEED_EMPLOYEES: Employee[] = [
     designation: 'Roster Specialist',
     ward: 'D',
     shift: 'General Shift',
-    unit: 'Unit 3',
+    unit: '',
     weekOff: 'Sunday',
     password: '123456'
   },
@@ -47,7 +47,7 @@ export const SEED_EMPLOYEES: Employee[] = [
     designation: 'Billing Executive',
     ward: 'H',
     shift: 'General Shift',
-    unit: 'Unit 1',
+    unit: '',
     weekOff: 'Thursday',
     password: '123456'
   },
@@ -239,13 +239,7 @@ export const SHIFTS: ShiftType[] = [
   'General Shift'
 ];
 
-export const UNITS = [
-  'Unit 1',
-  'Unit 2',
-  'Unit 3',
-  'Unit 4',
-  'Unit 5'
-];
+export const UNITS: string[] = [];
 
 export const DAYS_OF_WEEK = [
   'Monday',

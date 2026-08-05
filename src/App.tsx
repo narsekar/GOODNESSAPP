@@ -148,8 +148,13 @@ export default function App() {
     // 3. Ward Filter
     const matchesWard = filterWard === 'all' || emp.ward === filterWard;
 
-    // 4. Unit Filter (Disabled or N/A if shift isn't A Shift but let's filter if selected)
-    const matchesUnit = filterUnit === 'all' || emp.unit === filterUnit;
+    // 4. Unit Filter
+    const empUnitClean = (emp.unit || '').trim();
+    const matchesUnit = 
+      filterUnit === 'all' || 
+      (filterUnit === 'empty' 
+        ? (!empUnitClean || empUnitClean === '' || empUnitClean === '-')
+        : empUnitClean === filterUnit);
 
     // 5. Designation Filter
     const matchesDesignation = filterDesignation === 'all' || emp.designation === filterDesignation;
@@ -192,11 +197,18 @@ export default function App() {
     const set = new Set<string>();
     employees.forEach(e => {
       if (e.unit && e.unit.trim()) {
-        set.add(e.unit.trim());
+        const u = e.unit.trim();
+        if (!/^unit\s*[1-5]$/i.test(u)) {
+          set.add(u);
+        }
       }
     });
     if (set.size === 0) {
-      UNITS.forEach(u => set.add(u));
+      UNITS.forEach(u => {
+        if (!/^unit\s*[1-5]$/i.test(u)) {
+          set.add(u);
+        }
+      });
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
   }, [employees]);
@@ -675,26 +687,8 @@ export default function App() {
               </nav>
             </div>
 
-            {/* Lower Sidebar Area: Viewport toggles & copyright */}
+            {/* Lower Sidebar Area: Version Info */}
             <div className="space-y-4 border-t border-slate-100 pt-4">
-              <span className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-widest pl-2">Device View Mode</span>
-              <div className="bg-slate-50 p-1 rounded-xl flex items-center gap-1 text-[11px] font-bold text-slate-500 border border-slate-200">
-                <button 
-                  onClick={() => setPreviewDevice('auto')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-colors ${previewDevice === 'auto' ? 'bg-white text-emerald-800 shadow-xs' : 'hover:text-slate-800'}`}
-                >
-                  <Monitor size={11} />
-                  <span>PC Auto</span>
-                </button>
-                <button 
-                  onClick={() => setPreviewDevice('mobile')}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-lg transition-colors ${previewDevice === 'mobile' ? 'bg-white text-emerald-800 shadow-xs' : 'hover:text-slate-800'}`}
-                >
-                  <Smartphone size={11} />
-                  <span>Mobile</span>
-                </button>
-              </div>
-
               <div className="pl-2 leading-snug">
                 <span className="text-[10px] text-slate-400 font-bold block">Goodness App v1.2.0</span>
                 <span className="text-[9px] text-slate-300 block">Duty Adjuster Suite</span>
@@ -832,6 +826,7 @@ export default function App() {
                           className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer"
                         >
                           <option value="all">All Units</option>
+                          <option value="empty">Empty</option>
                           {availableUnits.map(u => (
                             <option key={u} value={u}>{u}</option>
                           ))}
@@ -1021,7 +1016,7 @@ export default function App() {
                               <tr className="bg-slate-50/50 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                                 <th className="px-5 py-2.5 border-r border-slate-100 font-mono w-24">Emp ID</th>
                                 <th className="px-5 py-2.5 border-r border-slate-100">Full Name</th>
-                                <th className="px-5 py-2.5 border-r border-slate-100">Designation & Ward</th>
+                                <th className="px-5 py-2.5 border-r border-slate-100">Designation, Ward & Unit</th>
                                 <th className="px-5 py-2.5 border-r border-slate-100 text-center">Category</th>
                                 <th className="px-5 py-2.5 border-r border-slate-100 text-center bg-emerald-50/40 text-emerald-800 font-black">Current Week Off</th>
                                 {session?.role === 'admin' && <th className="px-5 py-2.5 text-right">Action</th>}
@@ -1031,8 +1026,8 @@ export default function App() {
                               {filteredEmployees.map((emp) => {
                                 const collar = getCollarType(emp.designation, emp.id);
                                 const isSelf = session?.empId === emp.id;
-                                // Admin can edit Blue Collar directly since they can't log in/fill. White Collar must propose/fill first.
-                                const isEditable = session?.role === 'admin' && collar === 'blue';
+                                // Admin and White Collar users can edit week off directly in the dropdown
+                                const isEditable = session?.role === 'admin' || session?.role === 'white_collar';
 
                                 return (
                                   <tr 
@@ -1053,7 +1048,14 @@ export default function App() {
                                       </div>
                                     </td>
                                     <td className="px-5 py-2.5 border-r border-slate-100">
-                                      <div className="font-bold text-slate-800">{emp.designation}</div>
+                                      <div className="font-bold text-slate-800 flex items-center gap-1.5 flex-wrap">
+                                        <span>{emp.designation}</span>
+                                        {emp.unit && emp.unit.trim() !== '' && emp.unit.trim() !== '-' && (
+                                          <span className="text-[10px] bg-emerald-100 text-emerald-900 font-extrabold px-2 py-0.5 rounded-md border border-emerald-300 shadow-2xs">
+                                            {emp.unit}
+                                          </span>
+                                        )}
+                                      </div>
                                       <div className="text-[10px] text-slate-400 font-semibold">{emp.ward} • {emp.shift}</div>
                                     </td>
                                     <td className="px-5 py-2.5 border-r border-slate-100 text-center">
@@ -1092,27 +1094,19 @@ export default function App() {
                                         </div>
                                       </div>
                                     </td>
-                                    {session?.role === 'admin' && (
-                                      <td className="px-5 py-2 text-right">
-                                        <div className="flex items-center justify-end gap-1.5">
-                                          {collar === 'blue' ? (
-                                            <button
-                                              type="button"
-                                              onClick={() => initiateWeekOffChange(emp)}
-                                              className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold transition-all cursor-pointer animate-fade-in"
-                                              title="Change Week Off"
-                                            >
-                                              <Calendar size={13} />
-                                              <span>Change</span>
-                                            </button>
-                                          ) : (
-                                            <span className="text-[10px] text-slate-400 font-semibold italic bg-slate-50 border border-slate-200/60 px-2 py-0.5 rounded-lg">
-                                              WC: Fills First
-                                            </span>
-                                          )}
-                                        </div>
-                                      </td>
-                                    )}
+                                    <td className="px-5 py-2 text-right">
+                                      <div className="flex items-center justify-end gap-1.5">
+                                        <button
+                                          type="button"
+                                          onClick={() => initiateWeekOffChange(emp)}
+                                          className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold transition-all cursor-pointer animate-fade-in"
+                                          title="Change Week Off"
+                                        >
+                                          <Calendar size={13} />
+                                          <span>Change</span>
+                                        </button>
+                                      </div>
+                                    </td>
                                   </tr>
                                 );
                               })}
@@ -1125,8 +1119,8 @@ export default function App() {
                           {filteredEmployees.map((emp) => {
                             const collar = getCollarType(emp.designation, emp.id);
                             const isSelf = session?.empId === emp.id;
-                            // Admin can edit Blue Collar directly. White Collar must propose/fill first.
-                            const isEditable = session?.role === 'admin' && collar === 'blue';
+                            // Admin and White Collar users can edit week off directly
+                            const isEditable = session?.role === 'admin' || session?.role === 'white_collar';
 
                             return (
                               <div 
@@ -1146,9 +1140,14 @@ export default function App() {
                                         </span>
                                       )}
                                     </h4>
-                                    <p className="text-[9px] text-slate-400 font-semibold truncate">
+                                    <p className="text-[9px] text-slate-400 font-semibold truncate flex items-center gap-1 mt-0.5">
                                       <span>{emp.designation}</span>
-                                      <span className="mx-1">•</span>
+                                      {emp.unit && emp.unit.trim() !== '' && emp.unit.trim() !== '-' && (
+                                        <span className="text-[9px] bg-emerald-100 text-emerald-900 font-extrabold px-1.5 py-0.2 rounded border border-emerald-300">
+                                          {emp.unit}
+                                        </span>
+                                      )}
+                                      <span className="mx-0.5">•</span>
                                       <span className={collar === 'blue' ? 'text-amber-600 font-extrabold' : 'text-indigo-600 font-extrabold'}>
                                         {collar === 'blue' ? 'BC' : 'WC'}
                                       </span>
@@ -1183,19 +1182,17 @@ export default function App() {
                                     </div>
                                   </div>
 
-                                  {session?.role === 'admin' && collar === 'blue' && (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setMobileMenuOpen(false);
-                                        initiateWeekOffChange(emp);
-                                      }}
-                                      className="inline-flex items-center justify-center p-1 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 rounded-lg text-xs font-bold transition-all cursor-pointer h-7 w-7"
-                                      title="Change Week Off"
-                                    >
-                                      <Calendar size={13} />
-                                    </button>
-                                  )}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setMobileMenuOpen(false);
+                                      initiateWeekOffChange(emp);
+                                    }}
+                                    className="inline-flex items-center justify-center p-1 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-lg text-xs font-bold transition-all cursor-pointer h-7 w-7"
+                                    title="Change Week Off"
+                                  >
+                                    <Calendar size={13} />
+                                  </button>
                                 </div>
                               </div>
                             );
