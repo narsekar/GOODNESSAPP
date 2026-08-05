@@ -82,12 +82,9 @@ export default function App() {
 
   // Load state and subscribe to Firestore on mount
   useEffect(() => {
-    const storedSession = localStorage.getItem('goodness_session');
-    if (storedSession) {
-      try {
-        setSession(JSON.parse(storedSession));
-      } catch {}
-    }
+    // Ensure every new visit or page load starts at the login screen
+    localStorage.removeItem('goodness_session');
+    setSession(null);
 
     // Real-time Firestore Employees Subscription
     let isInitialLoad = true;
@@ -130,7 +127,6 @@ export default function App() {
   // Sync session and employees rosters
   const handleLogin = (userSession: UserSession) => {
     setSession(userSession);
-    localStorage.setItem('goodness_session', JSON.stringify(userSession));
   };
 
   const handleLogout = () => {
