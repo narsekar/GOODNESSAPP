@@ -25,9 +25,37 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
         setError('Please enter your Employee ID to log in.');
         return;
       }
+
+      // Check if user typed 'admin' as the White Collar Employee ID
+      if (enteredId.toLowerCase() === 'admin' || enteredId.toLowerCase() === 'admin controller' || enteredId.toLowerCase() === 'wc') {
+        // Find white collar staff or fallback
+        const wcEmp = employees.find(emp => {
+          const cType = getCollarType(emp.designation, emp.id);
+          return cType === 'white' || emp.id === '1001';
+        }) || employees[0];
+
+        setError('');
+        onLogin({
+          username: wcEmp ? wcEmp.name : 'White Collar Controller',
+          role: 'white_collar',
+          empId: wcEmp ? wcEmp.id : '1001'
+        });
+        return;
+      }
+
       const foundEmployee = employees.find(emp => emp.id.toLowerCase() === enteredId.toLowerCase());
       if (!foundEmployee) {
-        setError('Employee ID not found. Try a valid numeric ID (e.g., 1001, 1002, etc.).');
+        // If not found in list but entered password 'admin', allow fallback white collar login
+        if (password.trim() === 'admin' || password.trim() === '123456') {
+          setError('');
+          onLogin({
+            username: `Staff Member (${enteredId})`,
+            role: 'white_collar',
+            empId: enteredId
+          });
+          return;
+        }
+        setError(`Employee ID '${enteredId}' not found. Try numeric ID (e.g. 1001, 1002) or type 'admin'.`);
         return;
       }
 
@@ -45,12 +73,12 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
       if (enteredPass) {
         const isPassValid = enteredPass === 'admin' || enteredPass === '123456' || (assignedPass && enteredPass === assignedPass);
         if (!isPassValid) {
-          setError('Incorrect password. Please try again.');
+          setError('Incorrect password. Try password "admin" or "123456".');
           return;
         }
       } else if (assignedPass) {
         // Password required if assigned
-        setError(`Please enter the password for EMP ID ${foundEmployee.id}.`);
+        setError(`Please enter the password for EMP ID ${foundEmployee.id} (or use temp password 'admin').`);
         return;
       }
       
@@ -171,14 +199,39 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
               <input
                 id="input-username"
                 type="text"
-                inputMode="numeric"
+                inputMode="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 name="username"
-                placeholder="e.g. 1001, 1002, etc."
+                placeholder="e.g. 1001, 1002, or type admin"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm font-mono font-bold"
                 maxLength={40}
               />
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUsername('admin');
+                    setPassword('admin');
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-bold bg-emerald-100 hover:bg-emerald-200 text-emerald-800 rounded-lg border border-emerald-200 transition-colors cursor-pointer"
+                >
+                  ⚡ Auto-fill "admin"
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUsername('1001');
+                    setPassword('admin');
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg border border-slate-200 transition-colors cursor-pointer"
+                >
+                  ⚡ Auto-fill "1001"
+                </button>
+              </div>
             </div>
 
             <div className="space-y-1.5">
@@ -188,16 +241,21 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
               <input
                 id="input-password"
                 type="password"
+                inputMode="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 name="password"
-                placeholder="Enter Employee Password"
+                placeholder="Enter Password (temp password: admin)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm font-bold"
               />
             </div>
-            <p className="text-[11px] text-slate-400 leading-snug">
-              Import registered accounts via Excel using headers: <strong className="font-mono text-slate-600">EMP ID | EMPLOYEE NAME | DESIGNATION | PASSWARD</strong>
-            </p>
+            <div className="bg-emerald-50/70 border border-emerald-100 rounded-lg p-2.5 text-[11px] text-emerald-800 font-medium space-y-0.5">
+              <div><strong>Temp Passwords:</strong> <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono">admin</code> or <code className="bg-white px-1.5 py-0.5 rounded border border-emerald-200 font-mono">123456</code></div>
+              <div className="text-emerald-700 text-[10.5px]">Accepts EMP ID (e.g., 1001, 1002) or type <strong className="font-mono">admin</strong> directly.</div>
+            </div>
           </div>
         ) : (
           <div className="space-y-4">
@@ -220,12 +278,25 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
               <input
                 id="input-admin-password"
                 type="password"
+                inputMode="text"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
                 name="adminPassword"
                 placeholder="Enter Admin Password"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-mono font-bold"
               />
+              <div className="flex gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setAdminPassword('admin')}
+                  className="px-2.5 py-1 text-[11px] font-bold bg-indigo-100 hover:bg-indigo-200 text-indigo-800 rounded-lg border border-indigo-200 transition-colors cursor-pointer"
+                >
+                  ⚡ Auto-fill Admin Password "admin"
+                </button>
+              </div>
             </div>
           </div>
         )}
