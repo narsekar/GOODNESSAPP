@@ -1,0 +1,6 @@
+{
+  "name": "Goodness App",
+  "description": "Manage and track employee weekly off adjustments with real-time WhatsApp coordination, custom role-based permissions, and spreadsheet exports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

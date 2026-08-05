@@ -1,0 +1,51 @@
+{
+  "schema": {
+    "employees": {
+      "id": "string",
+      "name": "string",
+      "designation": "string",
+      "ward": "string",
+      "shift": "string",
+      "unit": "string",
+      "weekOff": "string",
+      "password": "string",
+      "collarType": "string"
+    },
+    "change_records": {
+      "id": "string",
+      "type": "string",
+      "empId": "string",
+      "empName": "string",
+      "submittedBy": "string",
+      "submittedByRole": "string",
+      "timestamp": "string",
+      "previousWeekOff": "string",
+      "newWeekOff": "string"
+    },
+    "week_off_requests": {
+      "id": "string",
+      "empId": "string",
+      "empName": "string",
+      "designation": "string",
+      "collarType": "string",
+      "currentWeekOff": "string",
+      "proposedWeekOff": "string",
+      "timestamp": "string",
+      "status": "string"
+    }
+  },
+  "securityRules": {
+    "employees": {
+      "read": true,
+      "write": true
+    },
+    "change_records": {
+      "read": true,
+      "write": true
+    },
+    "week_off_requests": {
+      "read": true,
+      "write": true
+    }
+  }
+}
