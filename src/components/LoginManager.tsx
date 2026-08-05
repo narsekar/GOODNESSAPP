@@ -38,16 +38,20 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
         return;
       }
 
-      // Check password if set on employee
-      if (foundEmployee.password && foundEmployee.password.trim()) {
-        if (!password) {
-          setError(`Please enter the password for EMP ID ${foundEmployee.id}.`);
+      // Check password: allow assigned password, or temp password 'admin' / '123456'
+      const enteredPass = password ? password.trim() : '';
+      const assignedPass = foundEmployee.password ? foundEmployee.password.trim() : '';
+      
+      if (enteredPass) {
+        const isPassValid = enteredPass === 'admin' || enteredPass === '123456' || (assignedPass && enteredPass === assignedPass);
+        if (!isPassValid) {
+          setError('Incorrect password. Please try again.');
           return;
         }
-        if (password.trim() !== foundEmployee.password.trim()) {
-          setError(`Incorrect password for EMP ID ${foundEmployee.id}. Please check your password.`);
-          return;
-        }
+      } else if (assignedPass) {
+        // Password required if assigned
+        setError(`Please enter the password for EMP ID ${foundEmployee.id}.`);
+        return;
       }
       
       setError('');
@@ -62,7 +66,7 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
         return;
       }
       if (adminPassword.trim() !== 'admin' && adminPassword.trim() !== '654321') {
-        setError('Incorrect Admin password.');
+        setError('Incorrect Admin password. Please try again.');
         return;
       }
 
@@ -217,7 +221,7 @@ export default function LoginManager({ session, employees, onLogin, onLogout }: 
                 id="input-admin-password"
                 type="password"
                 name="adminPassword"
-                placeholder="Enter Admin Password (admin)"
+                placeholder="Enter Admin Password"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
                 className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all text-sm font-mono font-bold"

@@ -744,12 +744,12 @@ export default function App() {
           </aside>
 
           {/* Main Content Area */}
-          <main className={`flex-1 flex flex-col min-w-0 ${
-            previewDevice === 'mobile' ? 'max-w-md mx-auto bg-white border-x border-slate-200 shadow-xl rounded-2xl my-4' : ''
+          <main className={`flex-1 flex flex-col min-w-0 w-full ${
+            previewDevice === 'mobile' ? 'max-w-md mx-auto bg-white border-x border-slate-200 shadow-xl rounded-2xl my-4' : 'w-full'
           }`}>
             
             {/* Main Interactive Workspace Container */}
-            <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-6 flex-1">
               
               {/* HIGH DENSITY SEARCH & DROP-DOWN CONTROLS */}
               {activeTab !== 'directory' && (
@@ -1431,7 +1431,6 @@ export default function App() {
                               <th className="px-5 py-3 border-r border-slate-100">Date & Time</th>
                               <th className="px-5 py-3 border-r border-slate-100">Employee</th>
                               <th className="px-5 py-3 border-r border-slate-100">Week Off Change</th>
-                              <th className="px-5 py-3 border-r border-slate-100 min-w-[200px]">WhatsApp Format</th>
                               <th className="px-5 py-3 border-r border-slate-100">Submitted By</th>
                               <th className="px-5 py-3 text-right">Actions</th>
                             </tr>
@@ -1441,7 +1440,6 @@ export default function App() {
                               const isCreator = rec.submittedBy === session.username;
                               const isAdmin = session.role === 'admin';
                               const canRemove = isAdmin || isCreator;
-                              const waMessage = generateWhatsAppMessage(rec);
 
                               return (
                                 <tr key={rec.id} className="hover:bg-slate-50/40 transition-colors">
@@ -1462,31 +1460,12 @@ export default function App() {
                                       <span className="text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">{rec.newWeekOff}</span>
                                     </div>
                                   </td>
-                                  <td className="px-5 py-3 border-r border-slate-100 max-w-xs">
-                                    <div className="bg-slate-900 text-slate-200 font-mono text-[9px] p-2 rounded-lg leading-snug whitespace-pre-wrap max-h-24 overflow-y-auto">
-                                      {waMessage}
-                                    </div>
-                                  </td>
                                   <td className="px-5 py-3 border-r border-slate-100 text-slate-500">
                                     <span className="font-bold text-slate-700 block">{rec.submittedBy}</span>
                                     <span className="text-[10px] capitalize">({rec.submittedByRole === 'admin' ? 'Admin' : 'WC Team'})</span>
                                   </td>
                                   <td className="px-5 py-3 text-right">
                                     <div className="flex items-center justify-end gap-1.5">
-                                      <button
-                                        onClick={() => handleCopySuccessMessage(rec)}
-                                        className="inline-flex items-center justify-center p-1.5 text-slate-500 hover:text-emerald-700 bg-slate-50 border border-slate-200 rounded-lg hover:bg-emerald-50 hover:border-emerald-200 cursor-pointer transition-colors"
-                                        title="Copy WhatsApp format"
-                                      >
-                                        {copiedId === rec.id ? <Check size={13} className="text-emerald-600" /> : <Copy size={13} />}
-                                      </button>
-                                      <button
-                                        onClick={() => handleShareWhatsAppDirect(rec)}
-                                        className="inline-flex items-center justify-center p-1.5 text-white bg-[#25D366] hover:bg-[#20ba56] rounded-lg cursor-pointer transition-colors"
-                                        title="Share directly on WhatsApp"
-                                      >
-                                        <MessageSquare size={13} />
-                                      </button>
                                       {canRemove ? (
                                         <button
                                           onClick={() => handleDeleteRecord(rec.id)}
@@ -1738,12 +1717,20 @@ export default function App() {
                 </div>
               )}
 
-            </div>
+              </div>
 
-          </div>
-        </main>
-      </>
-    )}
+              {/* Standard non-hype footer */}
+              <footer className="bg-white border-t border-slate-200 mt-12 py-6">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center sm:flex sm:items-center sm:justify-between text-xs text-slate-400">
+                  <p>© 2026 Goodness App. Built for hospital ward & staff communication.</p>
+                  <p className="font-bold text-emerald-600 mt-2 sm:mt-0 uppercase tracking-wider">Precision Duty Adjuster v1.2.0</p>
+                </div>
+              </footer>
+
+            </div>
+          </main>
+        </>
+      )}
 
       {/* --- QUICK WEEK OFF ADUSTMENT DIALOG OVERLAY --- */}
       {weekOffTarget && (
@@ -1789,14 +1776,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* WhatsApp Live Preview */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Real-time WhatsApp Format</span>
-                <div className="bg-slate-900 text-slate-200 font-mono text-[10px] p-3 rounded-lg leading-relaxed whitespace-pre-wrap max-h-32 overflow-y-auto">
-                  {`*Goodness App* | 🟢 *WEEK OFF CHANGE*\n*Emp:* ${weekOffTarget.name} (${weekOffTarget.id})\n*Change:* ${weekOffTarget.weekOff} ➔ ${newWeekOffDay}\n*By:* ${session?.username}`}
-                </div>
-              </div>
-
               <div className="flex gap-2.5 pt-2">
                 <button
                   type="button"
@@ -1817,64 +1796,28 @@ export default function App() {
         </div>
       )}
 
-
-
-      {/* --- SUCCESS CONFIRMATION & WHATSAPP INSTANT ACTION OVERLAY --- */}
+      {/* --- SUCCESS CONFIRMATION OVERLAY --- */}
       {successRecord && (
         <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full border border-emerald-100 shadow-2xl p-6 text-center space-y-4">
+          <div className="bg-white rounded-2xl max-w-sm w-full border border-emerald-100 shadow-2xl p-6 text-center space-y-4">
             
             <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-sm">
               <Check size={26} className="animate-bounce" />
             </div>
 
             <div>
-              <h3 className="text-lg font-black text-slate-900">Record Submitted successfully!</h3>
+              <h3 className="text-lg font-black text-slate-900">Record Updated Successfully!</h3>
               <p className="text-xs text-slate-500 mt-1">
-                The changes have been stored in the database. Share the short text report now.
+                The week off change for <strong>{successRecord.empName}</strong> ({successRecord.previousWeekOff} ➔ {successRecord.newWeekOff}) has been saved to the database.
               </p>
             </div>
 
-            {/* Generated Message Display Box */}
-            <div className="bg-slate-50 border border-slate-200 p-4 rounded-xl text-left font-mono text-xs whitespace-pre-wrap leading-relaxed text-slate-700">
-              {generateWhatsAppMessage(successRecord)}
-            </div>
-
-            {/* Shares Buttons */}
-            <div className="flex flex-col gap-2.5">
-              <button
-                onClick={() => handleShareWhatsAppDirect(successRecord)}
-                className="w-full py-3 bg-[#25D366] hover:bg-[#20ba56] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <MessageSquare size={15} />
-                Share Directly on WhatsApp
-              </button>
-
-              <div className="flex gap-2">
-                <button
-                  onClick={() => handleCopySuccessMessage(successRecord)}
-                  className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-all border border-slate-200 flex items-center justify-center gap-1 cursor-pointer"
-                >
-                  {copiedId === successRecord.id ? (
-                    <>
-                      <Check size={13} className="text-emerald-600" />
-                      <span>Copied!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy size={13} />
-                      <span>Copy Text Message</span>
-                    </>
-                  )}
-                </button>
-                <button
-                  onClick={() => setSuccessRecord(null)}
-                  className="px-4.5 py-2.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer"
-                >
-                  Done
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={() => setSuccessRecord(null)}
+              className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-colors cursor-pointer shadow-sm"
+            >
+              Done
+            </button>
 
           </div>
         </div>
@@ -1887,14 +1830,6 @@ export default function App() {
         onImport={handleBulkImportEmployees}
         currentStaffCount={employees.length}
       />
-
-      {/* Standard non-hype footer */}
-      <footer className="bg-white border-t border-slate-200 mt-16 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center sm:flex sm:items-center sm:justify-between text-xs text-slate-400">
-          <p>© 2026 Goodness App. Built for hospital ward & staff communication.</p>
-          <p className="font-bold text-emerald-600 mt-2 sm:mt-0 uppercase tracking-wider">Precision Duty Adjuster v1.2.0</p>
-        </div>
-      </footer>
 
     </div>
   );
