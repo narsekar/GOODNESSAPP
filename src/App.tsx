@@ -982,27 +982,29 @@ export default function App() {
                         </p>
                       </div>
 
-                      {/* Ward-wise Export Feature */}
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="text-xs font-bold text-slate-500 hidden sm:inline">Ward Excel Export:</span>
-                        <select 
-                          id="ward-wise-export-select"
-                          value={filterWard}
-                          onChange={(e) => setFilterWard(e.target.value)}
-                          className="bg-white text-xs border border-slate-200 px-2 py-1.5 rounded-lg font-bold focus:outline-none"
-                        >
-                          <option value="all">All Wards</option>
-                          {availableWards.map(w => <option key={w} value={w}>{w}</option>)}
-                        </select>
-                        <button
-                          onClick={() => exportEmployeesToCSV(employees, filterWard)}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-xs transition-colors cursor-pointer shadow-xs"
-                          title="Download Ward-wise filtered employees roster to CSV"
-                        >
-                          <Download size={13} />
-                          Export Active (.CSV)
-                        </button>
-                      </div>
+                      {/* Ward-wise Export Feature (Admin Only) */}
+                      {session?.role === 'admin' && (
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-xs font-bold text-slate-500 hidden sm:inline">Ward Excel Export:</span>
+                          <select 
+                            id="ward-wise-export-select"
+                            value={filterWard}
+                            onChange={(e) => setFilterWard(e.target.value)}
+                            className="bg-white text-xs border border-slate-200 px-2 py-1.5 rounded-lg font-bold focus:outline-none"
+                          >
+                            <option value="all">All Wards</option>
+                            {availableWards.map(w => <option key={w} value={w}>{w}</option>)}
+                          </select>
+                          <button
+                            onClick={() => exportEmployeesToCSV(employees, filterWard)}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-lg text-xs transition-colors cursor-pointer shadow-xs"
+                            title="Download Ward-wise filtered employees roster to CSV"
+                          >
+                            <Download size={13} />
+                            Export Active (.CSV)
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Empty State */}
